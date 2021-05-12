@@ -21,14 +21,21 @@ using Address for address payable;
 // Type declarations
 
 // State variables
-mapping(address => bool) private _friends;
 mapping(address => uint256) private _balances;
+address private _friends;
 address private _birthdayOwner;
+int256 private _piggyBank;
 
 // Events
+event Deposited(address indexed sender, uint256 amount);
+event Transfered(
+        address indexed sender,
+        address indexed recipient,
+        uint256 amount
+    );
 
 // constructor
-/* constructor(address birthdayOwner_, ) {
+/* constructor(address birthdayOwner_, int256 _piggyBank) {
     if (block.timestamp >= start + daysAfter * 1 days) {
       // ...
     }
@@ -36,7 +43,7 @@ address private _birthdayOwner;
 
 // Function modifiers
 modifier onlyFriends() {
-    require(msg.sender == _friends, "Ownable: Only friends can participate");
+    require(msg.sender == _friends, "Birthday: Only friends can participate");
     _;
 }
 
@@ -47,6 +54,10 @@ receive() external payable {
     }
     
     fallback() external {}
+    
+    function deposit() external payable {
+        _deposit(msg.sender, msg.value);
+    }
 
 function offer(address recipient, uint256 amount) external payable onlyFriends {
     require(_balances[msg.sender] > 0,"Birthday: can not offer 0 ether");
@@ -62,6 +73,11 @@ function getPresent() external payable onlyFriends {
 
 function isFriends(address account) public view returns (bool) {
         return _friends[account];
+    }
+    
+function _deposit(address sender, uint256 amount) private {
+        _balances[sender] += amount;
+        emit Deposited(sender, amount);
     }
 
 }
