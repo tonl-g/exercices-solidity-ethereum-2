@@ -22,16 +22,17 @@ using Address for address payable;
 
 // State variables
 mapping(address => bool) private _friends;
+mapping(address => uint256) private _balances;
 address private _birthdayOwner;
 
 // Events
 
 // constructor
-constructor(address birthdayOwner_, ) {
+/* constructor(address birthdayOwner_, ) {
     if (block.timestamp >= start + daysAfter * 1 days) {
       // ...
     }
-}
+} */
 
 // Function modifiers
 modifier onlyFriends() {
@@ -47,7 +48,7 @@ receive() external payable {
     
     fallback() external {}
 
-function offer() external payable onlyFriends {
+function offer(address recipient, uint256 amount) external payable onlyFriends {
     require(_balances[msg.sender] > 0,"Birthday: can not offer 0 ether");
         require(_balances[msg.sender] >= amount,"Birthday: Not enough Ether to offer");
         require(recipient != address(0),"Birthday: offer to the zero address");
