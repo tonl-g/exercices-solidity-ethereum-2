@@ -10,45 +10,39 @@ Il peut exister plusieurs solutions. */
 
 // SPDX-License-Identifier: MIT
 
+// Pragma statements
 pragma solidity ^0.8.0;
 
+// Import statements
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol";
 
+// contract
 contract Birthday {
 // Library usage
 using Address for address payable;
 
 // Type declarations
+mapping (address => bool) private _friends;
+mapping(address => uint256) private _balances;
+address private _recipient;
+uint256 private _birthday;
+uint256 private _participation;
 
 // State variables
-mapping(address => bool) private _friends;
-mapping(address => uint256) private _balances;
-address private _birthdayOwner;
-int256 private _piggyBank;
 
 // Events
 event Deposited(address indexed sender, uint256 amount);
-event Transfered(
-        address indexed sender,
-        address indexed recipient,
-        uint256 amount
-    );
 
 // constructor
-constructor(address birthdayOwner_, int256 piggyBank_) {
-    if (block.timestamp >= start + daysAfter * 1 days) {
-      // ...
+constructor (address recipient_, uint256 year, uint256 month, uint256 day){
+        _birthday=_humanDateToEpochTime(year,month,day);
+        require(_birthday>block.timestamp,"Birthday: This date is already passed.");
+        _recipient=recipient_;
     }
-}
 
 // Function modifiers
-/* modifier onlyFriends() {
-    require(msg.sender == _friends, "Birthday: Only friends can participate");
-    _;
-} */
 
 // Functions
-
 receive() external payable {
         _deposit(msg.sender, msg.value);
     }
@@ -58,8 +52,8 @@ receive() external payable {
     function deposit() external payable {
         _deposit(msg.sender, msg.value);
     }
-
-function offer(address recipient, uint256 amount) external payable {
+    
+    function offer(address recipient, uint256 amount) external payable {
     require(_balances[msg.sender] > 0,"Birthday: can not offer 0 ether");
         require(_balances[msg.sender] >= amount,"Birthday: Not enough Ether to offer");
         require(recipient != address(0),"Birthday: offer to the zero address");
@@ -68,7 +62,9 @@ function offer(address recipient, uint256 amount) external payable {
 }
 
 function getPresent() external payable {
-
+    require (_participation!=0,"Birthday: Sorry, nobody have done any contributions for your present..");
+        _participation=0;
+        payable(msg.sender).sendValue(address(this).balance);
 }
 
 function isFriends(address account) public view returns (bool) {
@@ -79,5 +75,10 @@ function _deposit(address sender, uint256 amount) private {
         _balances[sender] += amount;
         emit Deposited(sender, amount);
     }
-
+    
+function _humanDateToEpochTime(uint256 year,uint256 month, uint256 day)private pure returns (uint256){
+        require(year>1970 && month<=12&&day<=31,"Birthday: wrong input in the date");
+        return ((year - 1970)*31556926)+(2629743*(month-1)+(86400*(day-1))+36000);
+    }
+    
 }
